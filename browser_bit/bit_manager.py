@@ -4,8 +4,9 @@ import threading
 from typing import Dict, Any, Callable
 from queue import Queue
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 import time
+import concurrent.futures
+from datetime import datetime, timedelta
 
 class TaskManager:
     """
@@ -13,15 +14,16 @@ class TaskManager:
     """
     def __init__(self, max_concurrent=4):
         self.max_concurrent = max_concurrent
-        self.executor = ThreadPoolExecutor(max_workers=max_concurrent)
         self.task_queue = Queue()
         self.active_devices = set()  # 正在运行的 device_id 集合
         self.device_locks = {}  # 每个 device_id 的锁
         self.lock = threading.Lock()  # 线程安全锁
         self.playwright_instance = None
         self.running = True
-        self.worker_thread = threading.Thread(target=self._process_tasks, daemon=True)
-        self.worker_thread.start()
+        
+        # 启动任务分发线程
+        self.dispatcher_thread = threading.Thread(target=self._dispatch_tasks, daemon=True)
+        self.dispatcher_thread.start()
 
     async def initialize(self):
         """初始化 playwright 实例"""
@@ -58,8 +60,10 @@ class TaskManager:
         self.task_queue.put(task)
         return task_id
 
-    def _process_tasks(self):
-        """在后台线程中处理任务"""
+    def _dispatch_tasks(self):
+        """在单独的线程中分发任务，动态创建工作线程"""
+        active_workers = []
+        
         while self.running:
             try:
                 # 从队列中获取任务
@@ -67,14 +71,31 @@ class TaskManager:
                 if task is None:  # 用于停止线程的信号
                     break
                 
-                # 执行任务
-                self._execute_task(task)
+                # 清理已完成的线程
+                active_workers = [w for w in active_workers if w.is_alive()]
+                
+                # 如果活跃线程数未达到上限，创建新线程处理任务
+                if len(active_workers) < self.max_concurrent:
+                    worker = threading.Thread(
+                        target=self._worker_execute_task, 
+                        args=(task,),
+                        daemon=True
+                    )
+                    worker.start()
+                    active_workers.append(worker)
+                else:
+                    # 如果达到最大并发数，等待其中一个线程完成
+                    # 将任务放回队列，等待下次循环
+                    self.task_queue.put(task)
+                    time.sleep(0.1)  # 短暂休眠，避免忙等待
+                    continue
+                
                 self.task_queue.task_done()
             except:
                 continue  # 超时或其他异常，继续循环
 
-    def _execute_task(self, task: dict):
-        """执行单个任务"""
+    def _worker_execute_task(self, task):
+        """工作线程执行单个任务"""
         device_id = self._get_device_id(task['kwargs'])
         
         # 获取设备特定的锁
@@ -89,9 +110,19 @@ class TaskManager:
             try:
                 # 执行任务，传入 playwright 实例
                 if self.playwright_instance:
-                    # 使用 asyncio.run 在新事件循环中运行协程
-                    import asyncio
-                    asyncio.run(task['func'](self.playwright_instance, **task['kwargs']))
+                    # 在新的事件循环中运行协程
+                    def run_in_thread():
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        try:
+                            loop.run_until_complete(
+                                task['func'](self.playwright_instance, **task['kwargs'])
+                            )
+                        finally:
+                            loop.close()
+                    
+                    # 执行任务
+                    run_in_thread()
                 else:
                     raise RuntimeError("Playwright instance not initialized")
             finally:
@@ -102,8 +133,9 @@ class TaskManager:
     def shutdown(self):
         """关闭管理器"""
         self.running = False
-        self.task_queue.put(None)  # 发送停止信号
-        self.executor.shutdown(wait=True)
+        # 发送停止信号
+        self.task_queue.put(None)
+        
         if self.playwright_instance:
             import asyncio
             # 在单独的线程中关闭 playwright
