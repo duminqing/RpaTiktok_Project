@@ -35,9 +35,10 @@ async def check_upload_status(page, timeout=300000):
     return False
 
 async def post(playwright, **kwargs):
-    browser_id = kwargs.get("pad_code")
+    device_id = kwargs.get("device_id")
+    browser_id = kwargs.get("device_code")
     video_path = kwargs.get("video_path")
-    copy_content = kwargs.get("video_desc")
+    copy_content = kwargs.get("video_copy")
     res = openBrowser(browser_id)
     ws = res["data"]["ws"]
     print(f"Browser {browser_id} - ws address ==>>> {ws}")

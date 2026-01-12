@@ -6,7 +6,7 @@ from .bit_api import *
 
 async def scrolling(playwright, **kwargs):
     search_queries = kwargs.get('memo').split(',')
-    browser_id = kwargs.get('pad_code')
+    browser_id = kwargs.get('device_code')
     scrolling_time = int(kwargs.get('scrolling_time'))
     res = openBrowser(browser_id)
     ws = res['data']['ws']

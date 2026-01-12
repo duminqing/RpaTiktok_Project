@@ -20,9 +20,9 @@ def post_video(request):
         # 准备参数字典
         kwargs = {
             "device_id": data.get("device_id"),
-            "pad_code": data.get("pad_code"),
+            "device_code": data.get("device_code"),
             "video_path": data.get("video_path"),
-            "video_desc": data.get("video_desc"),
+            "video_copy": data.get("video_copy"),
         }
 
         # 过滤掉 None 值
@@ -55,7 +55,7 @@ def scroll_videos(request):
         # 准备参数字典
         kwargs = {
             "device_id": data.get("device_id"),
-            "pad_code": data.get("pad_code"),
+            "device_code": data.get("device_code"),
             "memo": data.get("memo"),
             "scrolling_time": data.get("scrolling_time"),
         }
@@ -90,7 +90,7 @@ def get_video_data(request):
         # 准备参数字典
         kwargs = {
             "device_id": data.get("device_id"),
-            "pad_code": data.get("pad_code"),
+            "device_code": data.get("device_code"),
             "tiktok_account": data.get("tiktok_account"),
         }
 

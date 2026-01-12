@@ -5,7 +5,7 @@ from .bit_api import *
 
 
 async def video_data(playwright, **kwargs):
-    browser_id = kwargs.get("pad_code")
+    browser_id = kwargs.get("device_code")
     res = openBrowser(browser_id)
     ws = res["data"]["ws"]
     print(f"Browser {browser_id} - ws address ==>>> {ws}")
