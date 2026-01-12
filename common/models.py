@@ -35,8 +35,8 @@ class TikTokAccountInfo(models.Model):
 
     class Meta:
         db_table = 'rpa_tiktok_account_info'
-        verbose_name = '账号信息'
-        verbose_name_plural = '账号信息'
+        verbose_name = 'TikTok账号信息'
+        verbose_name_plural = 'TikTok账号信息'
         ordering = ['-create_date']
 
     def __str__(self):
@@ -86,3 +86,26 @@ class Video(models.Model):
 
     def __str__(self):
         return f"Video(id={self.id}, video_path='{self.video_path}', status={self.status})"
+
+
+class VideoCopy(models.Model):
+    """
+    视频文案模型
+    对应数据库表: rpa_video_copy
+    """
+    copy_content = models.CharField(max_length=256, null=True, blank=True, verbose_name='文案内容')
+    copy_tag = models.IntegerField(null=True, blank=True, verbose_name='文案标签')
+    status = models.IntegerField(null=True, blank=True, verbose_name='文案状态')
+
+    # 时间字段
+    create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')
+    update_date = models.DateTimeField(null=True, blank=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'rpa_video_copy'
+        verbose_name = '视频文案'
+        verbose_name_plural = '视频文案'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"VideoCopy(id={self.id}, copy_content='{self.copy_content[:30]}...', status={self.status})"

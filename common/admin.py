@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TikTokAccountInfo, Device, Video
+from .models import TikTokAccountInfo, Device, Video, VideoCopy
 
 @admin.register(TikTokAccountInfo)
 class TikTokAccountInfoAdmin(admin.ModelAdmin):
@@ -62,6 +62,26 @@ class VideoAdmin(admin.ModelAdmin):
     fieldsets = (
         ('视频信息', {
             'fields': ('video_path', 'video_tag', 'status')
+        }),
+        ('时间信息', {
+            'fields': ('create_date', 'update_date'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(VideoCopy)
+class VideoCopyAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'copy_content', 'copy_tag', 'status', 
+        'create_date', 'update_date'
+    ]
+    list_filter = ['status', 'copy_tag', 'create_date']
+    search_fields = ['copy_content']
+    
+    fieldsets = (
+        ('文案信息', {
+            'fields': ('copy_content', 'copy_tag', 'status')
         }),
         ('时间信息', {
             'fields': ('create_date', 'update_date'),
