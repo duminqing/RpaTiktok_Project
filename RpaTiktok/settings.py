@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'android_myt',
     'browser_bit',
+    'common',
 ]
 
 MIDDLEWARE = [

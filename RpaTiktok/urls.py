@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('myt/', include('android_myt.urls')),
     path('bit/', include('browser_bit.urls')),
+    path('comm', include('common.urls'))
 
 ]
