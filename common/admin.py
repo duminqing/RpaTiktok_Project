@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TikTokAccountInfo, Device
+from .models import TikTokAccountInfo, Device, Video
 
 @admin.register(TikTokAccountInfo)
 class TikTokAccountInfoAdmin(admin.ModelAdmin):
@@ -46,5 +46,25 @@ class DeviceAdmin(admin.ModelAdmin):
         }),
         ('网络配置', {
             'fields': ('local_ip', 'local_port', 'proxy_ip')
+        }),
+    )
+
+
+@admin.register(Video)
+class VideoAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'video_path', 'video_tag', 'status', 
+        'create_date', 'update_date'
+    ]
+    list_filter = ['status', 'video_tag', 'create_date']
+    search_fields = ['video_path']
+    
+    fieldsets = (
+        ('视频信息', {
+            'fields': ('video_path', 'video_tag', 'status')
+        }),
+        ('时间信息', {
+            'fields': ('create_date', 'update_date'),
+            'classes': ('collapse',)
         }),
     )

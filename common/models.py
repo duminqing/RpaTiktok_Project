@@ -63,3 +63,26 @@ class Device(models.Model):
 
     def __str__(self):
         return f"Device(id={self.id}, device_id='{self.device_id}', device_type='{self.device_type}')"
+
+
+class Video(models.Model):
+    """
+    视频信息模型
+    对应数据库表: rpa_video
+    """
+    video_path = models.CharField(max_length=128, null=True, blank=True, verbose_name='视频路径')
+    video_tag = models.IntegerField(default=0, null=True, blank=True, verbose_name='视频标签')
+    status = models.IntegerField(default=0, verbose_name='状态')
+
+    # 时间字段
+    create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')
+    update_date = models.DateTimeField(null=True, blank=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'rpa_video'
+        verbose_name = '视频信息'
+        verbose_name_plural = '视频信息'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"Video(id={self.id}, video_path='{self.video_path}', status={self.status})"
