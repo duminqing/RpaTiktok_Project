@@ -122,3 +122,21 @@ class VideoCopy(models.Model):
 
     def __str__(self):
         return f"VideoCopy(id={self.id}, copy_content='{self.copy_content[:30]}...', status={self.status})"
+
+
+class SearchWord(models.Model):
+    """
+    搜索词汇模型
+    对应数据库表: rpa_search_word
+    """
+    tag_type = models.IntegerField(choices=TAG_CHOICES, null=True, blank=True, verbose_name='标签类型')
+    search_word = models.TextField(null=True, blank=True, verbose_name='搜索词汇')
+
+    class Meta:
+        db_table = 'rpa_search_word'
+        verbose_name = '搜索词汇'
+        verbose_name_plural = '搜索词汇'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"SearchWord(id={self.id}, search_word='{self.search_word[:30]}...')"
