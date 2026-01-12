@@ -7,22 +7,6 @@ logger = logging.getLogger(__name__)
 # 全球调度器实例
 scheduler = None
 
-
-# def execute_video_publishing_job():
-#     """每天凌晨3点执行的视频发布任务"""
-#     # 延迟导入，避免AppRegistryNotReady错误
-#     from common.task_executor import execute_tiktok_publishing_tasks
-#     print("开始执行定时视频发布任务...")
-#     logger.info("开始执行定时视频发布任务...")
-#     try:
-#         execute_tiktok_publishing_tasks()
-#         print("定时视频发布任务执行完成")
-#         logger.info("定时视频发布任务执行完成")
-#     except Exception as e:
-#         print(f"定时视频发布任务执行失败: {str(e)}")
-#         logger.error(f"定时视频发布任务执行失败: {str(e)}")
-
-
 def start_scheduler():
     """启动定时任务调度器"""
     global scheduler
