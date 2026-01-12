@@ -4,7 +4,7 @@ from .models import TikTokAccountInfo, Device, Video, VideoCopy
 @admin.register(TikTokAccountInfo)
 class TikTokAccountInfoAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'tiktok_account', 'device_id', 'account_status', 
+        'id', 'tiktok_account', 'account_tag', 'device_id', 'account_status',
         'account_likes', 'account_followers', 'create_date'
     ]
     list_filter = ['account_status', 'account_tag', 'create_date']

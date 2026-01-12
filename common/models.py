@@ -2,7 +2,20 @@
 from django.db import models
 from django.utils import timezone
 
-
+TAG_CHOICES = [
+    (0, '未分类'),
+    (1, '女士'),
+    (2, '宠物'),
+]
+STATUS_CHOICES = [
+    (0, '正常'),
+    (1, '封号'),
+    (2, '养号'),
+]
+STATUS2_CHOICES = [
+    (0, '未使用'),
+    (1, '已使用'),
+]
 class TikTokAccountInfo(models.Model):
     """
     TikTok 账号信息模型
@@ -14,8 +27,8 @@ class TikTokAccountInfo(models.Model):
     account_password = models.CharField(max_length=255, null=True, blank=True, verbose_name='TK密码')
 
     # 账号标签和状态
-    account_tag = models.IntegerField(null=True, blank=True, verbose_name='账号标签')
-    account_status = models.IntegerField(null=True, blank=True, verbose_name='状态')
+    account_tag = models.IntegerField(choices=TAG_CHOICES, null=True, blank=True, verbose_name='账号标签')
+    account_status = models.IntegerField(choices=STATUS_CHOICES, null=True, blank=True, verbose_name='状态')
 
     # 统计信息
     account_likes = models.IntegerField(null=True, blank=True, verbose_name='点赞数')
@@ -35,8 +48,8 @@ class TikTokAccountInfo(models.Model):
 
     class Meta:
         db_table = 'rpa_tiktok_account_info'
-        verbose_name = 'TikTok账号信息'
-        verbose_name_plural = 'TikTok账号信息'
+        verbose_name = '账号信息'
+        verbose_name_plural = '账号信息'
         ordering = ['-create_date']
 
     def __str__(self):
@@ -71,8 +84,8 @@ class Video(models.Model):
     对应数据库表: rpa_video
     """
     video_path = models.CharField(max_length=128, null=True, blank=True, verbose_name='视频路径')
-    video_tag = models.IntegerField(default=0, null=True, blank=True, verbose_name='视频标签')
-    status = models.IntegerField(default=0, verbose_name='状态')
+    video_tag = models.IntegerField(choices=TAG_CHOICES, default=0, null=True, blank=True, verbose_name='视频标签')
+    status = models.IntegerField(choices=STATUS2_CHOICES, default=0, verbose_name='视频状态')
 
     # 时间字段
     create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')
@@ -94,8 +107,8 @@ class VideoCopy(models.Model):
     对应数据库表: rpa_video_copy
     """
     copy_content = models.CharField(max_length=256, null=True, blank=True, verbose_name='文案内容')
-    copy_tag = models.IntegerField(null=True, blank=True, verbose_name='文案标签')
-    status = models.IntegerField(null=True, blank=True, verbose_name='文案状态')
+    copy_tag = models.IntegerField(choices=TAG_CHOICES, null=True, blank=True, verbose_name='文案标签')
+    status = models.IntegerField(choices=STATUS2_CHOICES, blank=True, verbose_name='文案状态')
 
     # 时间字段
     create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')
