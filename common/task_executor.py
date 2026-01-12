@@ -1,16 +1,58 @@
 from django.utils import timezone
 
-from common.models import TikTokAccountInfo, Device, Video, VideoCopy
+from common.models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord
 from browser_bit.bit_manager import browser_task_manager
 from browser_bit.bit_post import post
+from browser_bit.bit_scrolling import scrolling
 from android_myt.android_manager import android_task_manager
 from android_myt.android_post import perform_tiktok_post
+from android_myt.android_scrolling import perform_tiktok_scrolling
 
 def execute_tiktok_scrolling_tasks():
-    # 从数据库查询rpa_tiktok_account_info查询状态为0的数据，循环操作
-    # 1）通过rpa_tiktok_account_info.device_id = rpa_device.device_id查询到对应的设备信息
-    # 2）
-    pass
+    accounts = TikTokAccountInfo.objects.filter(account_status=0)
+    for account in accounts:
+        # 1) 通过account.device_id关联到Device表获取设备信息
+        device = Device.objects.filter(device_id=account.device_id).first()
+        
+        if not device:
+            print(f"未找到设备ID为 {account.device_id} 的设备信息，跳过账号 {account.tiktok_account}")
+            continue
+            
+        # 2) 通过account.account_tag = SearchWord.tag_type 查询相应tag的搜索词数据
+        search_words = SearchWord.objects.filter(tag_type=account.account_tag)
+        
+        if not search_words.exists():
+            print(f"未找到标签为 {account.account_tag} 的搜索词，跳过账号 {account.tiktok_account}")
+            continue
+        
+        # 将搜索词组合成逗号分隔的字符串
+        search_word_str = ','.join([sw.search_word for sw in search_words])
+        
+        # 根据device_id前缀决定使用哪个方法
+        if account.device_id.startswith("BIT"):
+            # 使用browser_bit的scrolling方法
+            kwargs = {
+                'device_code': device.device_code,  # 使用设备编码连接浏览器
+                'search_word': search_word_str,
+                'scrolling_time': 60,  # 固定刷视频时间为60分钟
+            }
+            
+            # 提交任务到任务管理器
+            task_id = browser_task_manager.submit_task(scrolling, **kwargs)
+            print(f"已提交浏览器刷视频任务，账号: {account.tiktok_account}, 任务ID: {task_id}")
+        else:
+            # 使用android_myt的perform_tiktok_scrolling方法
+            kwargs = {
+                'device_id': account.device_id,
+                'pad_code': device.device_code,
+                'local_ip': device.local_ip,
+                'local_port': device.local_port,
+                'scrolling_time': 60,  # 固定刷视频时间为60分钟
+            }
+            
+            # 提交任务到Android任务管理器
+            task_id = android_task_manager.submit_task(perform_tiktok_scrolling, **kwargs)
+            print(f"已提交安卓刷视频任务，账号: {account.tiktok_account}, 任务ID: {task_id}")
 
 
 def execute_tiktok_publishing_tasks():
@@ -61,7 +103,7 @@ def execute_tiktok_publishing_tasks():
             # 使用android_myt的perform_tiktok_post方法
             kwargs = {
                 'device_id': account.device_id,
-                'pad_code': device.device_code,
+                'device_code': device.device_code,
                 'local_ip': device.local_ip,
                 'local_port': device.local_port,
                 'video_path': video.video_path,

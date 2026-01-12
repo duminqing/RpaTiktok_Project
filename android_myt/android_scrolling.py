@@ -12,7 +12,6 @@ def perform_tiktok_scrolling(**kwargs):
     执行TikTok滚动任务的实际函数
     这个函数将由任务管理器的设备线程调用
     """
-    # 从kwargs中获取参数
     pad_code = kwargs.get('pad_code')
     local_ip = kwargs.get('local_ip')
     local_port = kwargs.get('local_port')
