@@ -40,8 +40,8 @@ def start_scheduler():
             scheduler.add_job(
                 execute_tiktok_publishing_tasks,  # 传递函数引用而不是执行函数
                 'cron',
-                hour=16,
-                minute=23,
+                hour=2,
+                minute=0,
                 id='video_publishing_job',
                 name='每天凌晨3点执行视频发布的任务'
             )
