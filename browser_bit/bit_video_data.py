@@ -1,40 +1,42 @@
 import asyncio
 import time
-
 from .bit_api import *
+from playwright.async_api import async_playwright
 
 
-async def video_data(playwright, **kwargs):
+async def video_data(**kwargs):
     browser_id = kwargs.get("device_code")
-    res = openBrowser(browser_id)
-    ws = res["data"]["ws"]
-    print(f"Browser {browser_id} - ws address ==>>> {ws}")
+    
+    async with async_playwright() as playwright:
+        res = openBrowser(browser_id)
+        ws = res["data"]["ws"]
+        print(f"Browser {browser_id} - ws address ==>>> {ws}")
 
-    chromium = playwright.chromium
-    browser = await chromium.connect_over_cdp(ws)
-    default_context = browser.contexts[0]
-    page = await default_context.new_page()
-    tiktok_account = kwargs.get("tiktok_account")
-    # 监听API请求
-    page.on("response", lambda response: handle_api_response(response, tiktok_account))
+        chromium = playwright.chromium
+        browser = await chromium.connect_over_cdp(ws)
+        default_context = browser.contexts[0]
+        page = await default_context.new_page()
+        tiktok_account = kwargs.get("tiktok_account")
+        # 监听API请求
+        page.on("response", lambda response: handle_api_response(response, tiktok_account))
 
-    try:
-        # 打开目标TikTok页面
-        await page.goto(f"https://www.{tiktok_account}", timeout=60000)
-        print("Successfully navigated to the TikTok profile")
-        # 可能需要等待页面加载完成
-        await page.wait_for_load_state("networkidle")
-        # 这里可以添加滚动逻辑来触发更多视频加载
-        await scroll_and_collect_videos(page)
-    except Exception as e:
-        print(f"Error during navigation: {e}")
-    # 保持浏览器开启一段时间以便捕获API响应
-    await asyncio.sleep(30)  # 可根据需要调整时间
-    print(f"Browser {browser_id} - end")
-    print(f"Browser {browser_id} - close page and browser")
+        try:
+            # 打开目标TikTok页面
+            await page.goto(f"https://www.{tiktok_account}", timeout=60000)
+            print("Successfully navigated to the TikTok profile")
+            # 可能需要等待页面加载完成
+            await page.wait_for_load_state("networkidle")
+            # 这里可以添加滚动逻辑来触发更多视频加载
+            await scroll_and_collect_videos(page)
+        except Exception as e:
+            print(f"Error during navigation: {e}")
+        # 保持浏览器开启一段时间以便捕获API响应
+        await asyncio.sleep(30)  # 可根据需要调整时间
+        print(f"Browser {browser_id} - end")
+        print(f"Browser {browser_id} - close page and browser")
 
-    time.sleep(2)
-    closeBrowser(browser_id)
+        time.sleep(2)
+        closeBrowser(browser_id)
 
 
 async def scroll_and_collect_videos(page):

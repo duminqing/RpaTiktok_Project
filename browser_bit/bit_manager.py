@@ -18,17 +18,11 @@ class TaskManager:
         self.active_devices = set()  # 正在运行的 device_id 集合
         self.device_locks = {}  # 每个 device_id 的锁
         self.lock = threading.Lock()  # 线程安全锁
-        self.playwright_instance = None
         self.running = True
         
         # 启动任务分发线程
         self.dispatcher_thread = threading.Thread(target=self._dispatch_tasks, daemon=True)
         self.dispatcher_thread.start()
-
-    async def initialize(self):
-        """初始化 playwright 实例"""
-        if not self.playwright_instance:
-            self.playwright_instance = await async_playwright().start()
 
     def _get_device_id(self, kwargs: Dict[str, Any]) -> str:
         """从参数中获取设备ID"""
@@ -108,23 +102,14 @@ class TaskManager:
                 self.active_devices.add(device_id)
             
             try:
-                # 执行任务，传入 playwright 实例
-                if self.playwright_instance:
-                    # 在新的事件循环中运行协程
-                    def run_in_thread():
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        try:
-                            loop.run_until_complete(
-                                task['func'](self.playwright_instance, **task['kwargs'])
-                            )
-                        finally:
-                            loop.close()
-                    
-                    # 执行任务
-                    run_in_thread()
-                else:
-                    raise RuntimeError("Playwright instance not initialized")
+                # 执行任务，这里不再需要传递 playwright 实例，因为任务内部会自行创建
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    # 直接运行任务，不再传递 playwright 实例
+                    loop.run_until_complete(task['func'](**task['kwargs']))
+                finally:
+                    loop.close()
             finally:
                 # 移除活跃设备标记
                 with self.lock:
@@ -135,14 +120,6 @@ class TaskManager:
         self.running = False
         # 发送停止信号
         self.task_queue.put(None)
-        
-        if self.playwright_instance:
-            import asyncio
-            # 在单独的线程中关闭 playwright
-            close_thread = threading.Thread(
-                target=lambda: asyncio.run(self.playwright_instance.stop())
-            )
-            close_thread.start()
 
 # 创建全局任务管理器实例
 task_manager = TaskManager(max_concurrent=4)
