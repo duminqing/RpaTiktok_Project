@@ -122,4 +122,4 @@ class TaskManager:
         self.task_queue.put(None)
 
 # 创建全局任务管理器实例
-task_manager = TaskManager(max_concurrent=4)
+browser_task_manager = TaskManager(max_concurrent=4)
