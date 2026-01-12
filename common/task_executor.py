@@ -6,6 +6,12 @@ from browser_bit.bit_post import post
 from android_myt.android_manager import android_task_manager
 from android_myt.android_post import perform_tiktok_post
 
+def execute_tiktok_scrolling_tasks():
+    # 从数据库查询rpa_tiktok_account_info查询状态为0的数据，循环操作
+    # 1）通过rpa_tiktok_account_info.device_id = rpa_device.device_id查询到对应的设备信息
+    # 2）
+    pass
+
 
 def execute_tiktok_publishing_tasks():
     """

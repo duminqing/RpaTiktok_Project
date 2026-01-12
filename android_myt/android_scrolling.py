@@ -1,9 +1,9 @@
-from . android_connect_device import connect_device
+from .android_connect_device import connect_device
 import logging
 import time
 import random
 import asyncio
-from . android_common import click_element, press_home, screenshot, open_tiktok, random_sleep, click_bound
+from .android_common import click_element, press_home, screenshot, open_tiktok, random_sleep, click_bound
 logger = logging.getLogger(__name__)
 
 

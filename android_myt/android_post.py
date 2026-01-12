@@ -1,6 +1,6 @@
 import requests
 import datetime
-from . android_connect_device import connect_device
+from .android_connect_device import connect_device
 
 from . android_common import press_home, screenshot, open_tiktok, random_sleep, click_bound
 import logging
