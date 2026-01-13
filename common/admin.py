@@ -131,7 +131,8 @@ class VideoAdmin(admin.ModelAdmin):
                 
                 # 列出目录中的所有文件
                 for filename in os.listdir(video_directory):
-                    filepath = os.path.join(video_directory, filename)
+                    # 使用正斜杠构建路径
+                    filepath = os.path.join(video_directory, filename).replace('\\', '/')
                     
                     # 检查是否为文件且扩展名在允许的视频格式中
                     if os.path.isfile(filepath):
