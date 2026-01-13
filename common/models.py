@@ -109,7 +109,7 @@ class VideoCopy(models.Model):
     """
     copy_content = models.CharField(max_length=256, null=True, blank=True, verbose_name='文案内容')
     copy_tag = models.IntegerField(choices=TAG_CHOICES, null=True, blank=True, verbose_name='文案标签')
-    status = models.IntegerField(choices=STATUS2_CHOICES, blank=True, verbose_name='文案状态')
+    status = models.IntegerField(choices=STATUS2_CHOICES, default=0, verbose_name='文案状态')
 
     # 时间字段
     create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')

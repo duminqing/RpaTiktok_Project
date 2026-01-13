@@ -2,6 +2,18 @@ import asyncio
 import time
 from .bit_api import *
 from playwright.async_api import async_playwright
+from django.conf import settings
+import django
+import os
+from django.db import models
+
+# 设置Django环境
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'RpaTiktok.settings')
+django.setup()
+
+from common.models import VideoData
+from django.db import transaction
+from asgiref.sync import sync_to_async
 
 
 async def get_video_data(**kwargs):
@@ -66,12 +78,30 @@ async def handle_api_response(response, tiktok_account):
             else:
                 print(f"Response data: {data_str}")
             # 在这里可以处理获取到的数据
-            process_video_data(data, tiktok_account)
+            await process_video_data(data, tiktok_account)  # 使用异步调用
         except Exception as e:
             print(f"Error processing API response: {e}")
 
 
-def process_video_data(data, tiktok_account):
+@sync_to_async
+def save_video_data_to_db(video_data):
+    """在异步环境中安全地保存视频数据到数据库"""
+    video_obj, created = VideoData.objects.update_or_create(
+        video_id=video_data["video_id"],
+        defaults={
+            'tiktok_account': video_data["tiktok_account"],
+            'desc': video_data["desc"],
+            'collect_count': video_data["collect_count"],
+            'comment_count': video_data["comment_count"],
+            'digg_count': video_data["digg_count"],
+            'play_count': video_data["play_count"],
+            'share_count': video_data["share_count"]
+        }
+    )
+    return video_obj, created
+
+
+async def process_video_data(data, tiktok_account):
     """处理获取到的视频数据"""
     # 实现具体的数据处理逻辑
     all_data = []
@@ -92,4 +122,11 @@ def process_video_data(data, tiktok_account):
             my["play_count"] = stats.get("playCount", 0)
             my["share_count"] = stats.get("shareCount", 0)
             all_data.append(my)
-            # 保存数据
+            
+            # 异步保存到数据库，根据video_id去重
+            video_obj, created = await save_video_data_to_db(my)
+            
+            if created:
+                print(f"New video saved: {my['video_id']}")
+            else:
+                print(f"Existing video updated: {my['video_id']}")
