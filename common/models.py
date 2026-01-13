@@ -89,8 +89,8 @@ class Video(models.Model):
     status = models.IntegerField(choices=STATUS2_CHOICES, default=0, verbose_name='视频状态')
 
     # 时间字段
-    create_date = models.DateTimeField(null=True, blank=True, verbose_name='创建时间')
-    update_date = models.DateTimeField(null=True, blank=True, verbose_name='更新时间')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    update_date = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     class Meta:
         db_table = 'rpa_video'
