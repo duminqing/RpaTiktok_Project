@@ -28,7 +28,6 @@ def start_scheduler():
         # 检查任务是否已经存在，避免重复添加
         if not scheduler.running:
             scheduler.start()
-        from common.task_executor import execute_tiktok_publishing_tasks, execute_tiktok_scrolling_tasks
         # 检查是否已有相同ID的任务
         if not scheduler.get_job('video_publishing_job'):
             scheduler.add_job(
