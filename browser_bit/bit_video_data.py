@@ -76,26 +76,20 @@ def process_video_data(data, tiktok_account):
     # 实现具体的数据处理逻辑
     all_data = []
     if "itemList" in data:
-
         videos = data["itemList"]
         print(f"Found {len(videos)} videos")
         for video in videos:
             my = {}
-            video_id = video.get("id")
             # 获取统计数据
             stats = video.get("stats", {})
-            collect_count = stats.get("collectCount", 0)
-            comment_count = stats.get("commentCount", 0)
-            digg_count = stats.get("diggCount", 0)
-            play_count = stats.get("playCount", 0)
-            share_count = stats.get("shareCount", 0)
             # 打印详细信息
             my["tiktok_account"] = tiktok_account
-            my["video_id"] = video_id
-            my["collect_count"] = collect_count
-            my["comment_count"] = comment_count
-            my["digg_count"] = digg_count
-            my["play_count"] = play_count
-            my["share_count"] = share_count
+            my["video_id"] = video.get("id")
+            my["desc"] = video.get("desc")
+            my["collect_count"] = stats.get("collectCount", 0)
+            my["comment_count"] = stats.get("commentCount", 0)
+            my["digg_count"] = stats.get("diggCount", 0)
+            my["play_count"] = stats.get("playCount", 0)
+            my["share_count"] = stats.get("shareCount", 0)
             all_data.append(my)
-        # 保存数据
+            # 保存数据

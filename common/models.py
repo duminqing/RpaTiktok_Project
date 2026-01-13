@@ -141,3 +141,26 @@ class SearchWord(models.Model):
 
     def __str__(self):
         return f"SearchWord(id={self.id}, search_word='{self.search_word[:30]}...')"
+
+
+class VideoData(models.Model):
+    id = models.AutoField(primary_key=True)
+    tiktok_account = models.CharField(max_length=255, null=True, blank=True, verbose_name='TikTok账号')
+    video_id = models.CharField(max_length=255, unique=True, null=True, blank=True, verbose_name='视频ID')
+    desc = models.TextField(null=True, blank=True, verbose_name='视频描述')
+    collect_count = models.IntegerField(default=0, verbose_name='收藏数')
+    comment_count = models.IntegerField(default=0, verbose_name='评论数')
+    digg_count = models.IntegerField(default=0, verbose_name='点赞数')
+    play_count = models.IntegerField(default=0, verbose_name='播放数')
+    share_count = models.IntegerField(default=0, verbose_name='分享数')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    update_date = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'rpa_video_data'
+        verbose_name = '视频数据'
+        verbose_name_plural = '视频数据'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"VideoData(id={self.id}, tiktok_account='{self.tiktok_account}', video_id='{self.video_id}')"
