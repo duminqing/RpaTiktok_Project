@@ -1,6 +1,6 @@
 import requests
 import datetime
-from . android_connect_device import connect_device
+from .android_connect_device import connect_device
 
 from . android_common import press_home, screenshot, open_tiktok, random_sleep, click_bound
 import logging
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def perform_tiktok_post(**kwargs):
     device_id = kwargs.get('device_id')
-    pad_code = kwargs.get('pad_code')
+    pad_code = kwargs.get('device_code')
     local_ip = kwargs.get('local_ip')
     local_port = kwargs.get('local_port')
     video_path = kwargs.get('video_path')

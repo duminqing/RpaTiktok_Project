@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import TikTokAccountInfo, Device, Video, VideoCopy
+from .models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord
 
 @admin.register(TikTokAccountInfo)
 class TikTokAccountInfoAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'tiktok_account', 'device_id', 'account_status', 
+        'id', 'tiktok_account', 'account_tag', 'device_id', 'account_status',
         'account_likes', 'account_followers', 'create_date'
     ]
     list_filter = ['account_status', 'account_tag', 'create_date']
@@ -86,5 +86,20 @@ class VideoCopyAdmin(admin.ModelAdmin):
         ('时间信息', {
             'fields': ('create_date', 'update_date'),
             'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(SearchWord)
+class SearchWordAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',  'tag_type', 'search_word',
+    ]
+    list_filter = ['tag_type']
+    search_fields = ['search_word']
+    
+    fieldsets = (
+        ('搜索词信息', {
+            'fields': ['search_word', 'tag_type']
         }),
     )

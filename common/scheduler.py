@@ -1,8 +1,5 @@
-import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.conf import settings
-
-logger = logging.getLogger(__name__)
 
 # 全球调度器实例
 scheduler = None
@@ -34,13 +31,13 @@ def start_scheduler():
         # 检查任务是否已经存在，避免重复添加
         if not scheduler.running:
             scheduler.start()
-        
+        from common.task_executor import execute_tiktok_publishing_tasks, execute_tiktok_scrolling_tasks
         # 检查是否已有相同ID的任务
         if not scheduler.get_job('video_publishing_job'):
             scheduler.add_job(
                 execute_video_publishing_job,  # 传递函数引用而不是执行函数
                 'cron',
-                hour=3,
+                hour=2,
                 minute=0,
                 id='video_publishing_job',
                 name='每天凌晨3点执行视频发布的任务',
