@@ -108,6 +108,8 @@ class TaskManager:
                 try:
                     # 直接运行任务，不再传递 playwright 实例
                     loop.run_until_complete(task['func'](**task['kwargs']))
+                except Exception as e:
+                    print(f"任务执行失败: {task['kwargs']}")
                 finally:
                     loop.close()
             finally:

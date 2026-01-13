@@ -8,7 +8,7 @@ from browser_bit.bit_video_data import get_video_data
 from android_myt.android_manager import android_task_manager
 from android_myt.android_post import perform_tiktok_post
 from android_myt.android_scrolling import perform_tiktok_scrolling
-from android_myt.android_video_data import get_video_data
+from android_myt import android_video_data
 
 def execute_tiktok_scrolling_tasks():
     accounts = TikTokAccountInfo.objects.filter(account_status=0)
@@ -134,6 +134,7 @@ def execute_tiktok_video_data_tasks():
             print(f"未找到设备ID为 {account.device_id} 的设备信息，跳过账号 {account.tiktok_account}")
             continue
         if account.device_id.startswith("BIT"):
+            pass
             # 使用browser_bit的post方法
             kwargs = {
                 'device_id': account.device_id,
@@ -152,5 +153,5 @@ def execute_tiktok_video_data_tasks():
             }
 
             # 提交任务到Android任务管理器
-            task_id = android_task_manager.submit_task(get_video_data, **kwargs)
+            task_id = android_task_manager.submit_task(android_video_data.get_video_data, **kwargs)
             print(f"已提交安卓任务，账号: {account.tiktok_account}, 任务ID: {task_id}")

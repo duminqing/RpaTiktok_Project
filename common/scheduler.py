@@ -82,13 +82,13 @@ def start_scheduler():
             scheduler.add_job(
                 execute_video_data_job,  # 传递函数引用而不是执行函数
                 'cron',
-                hour='6,12,18,24',  #
+                hour='6,12,18,0',  #
                 minute=0,
                 id='video_data_job',
-                name='每天6,12,18,24点执行视频数据任务',
+                name='每天0,6,12,18点执行视频数据任务',
                 misfire_grace_time=3600  # 设置错过执行的宽限时间为1小时
             )
-            print("定时任务已添加: 每天6,12,18,24点执行视频数据任务")
+            print("定时任务已添加: 每天0,6,12,18点执行视频数据任务")
         else:
             print("定时任务已存在，无需重复添加")
 

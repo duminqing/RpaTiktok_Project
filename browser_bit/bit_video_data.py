@@ -2,18 +2,15 @@ import asyncio
 import time
 from .bit_api import *
 from playwright.async_api import async_playwright
-from django.conf import settings
-import django
 import os
-from django.db import models
 
-# 设置Django环境
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'RpaTiktok.settings')
-django.setup()
-
-from common.models import VideoData
-from django.db import transaction
-from asgiref.sync import sync_to_async
+# 将Django导入和设置放在函数内部，以避免初始化问题
+def setup_django():
+    import django
+    from django.conf import settings
+    
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'RpaTiktok.settings')
+    django.setup()
 
 
 async def get_video_data(**kwargs):
@@ -83,26 +80,37 @@ async def handle_api_response(response, tiktok_account):
             print(f"Error processing API response: {e}")
 
 
-@sync_to_async
-def save_video_data_to_db(video_data):
-    """在异步环境中安全地保存视频数据到数据库"""
-    video_obj, created = VideoData.objects.update_or_create(
-        video_id=video_data["video_id"],
-        defaults={
-            'tiktok_account': video_data["tiktok_account"],
-            'desc': video_data["desc"],
-            'collect_count': video_data["collect_count"],
-            'comment_count': video_data["comment_count"],
-            'digg_count': video_data["digg_count"],
-            'play_count': video_data["play_count"],
-            'share_count': video_data["share_count"]
-        }
-    )
-    return video_obj, created
-
-
 async def process_video_data(data, tiktok_account):
     """处理获取到的视频数据"""
+    # 延迟导入Django组件，避免初始化问题
+    if 'VideoData' not in globals():
+        setup_django()
+        from common.models import VideoData
+        from asgiref.sync import sync_to_async
+        
+        # 定义异步数据库操作函数
+        @sync_to_async
+        def save_video_data_to_db(video_data):
+            """在异步环境中安全地保存视频数据到数据库"""
+            from common.models import VideoData
+            video_obj, created = VideoData.objects.update_or_create(
+                video_id=video_data["video_id"],
+                defaults={
+                    'tiktok_account': video_data["tiktok_account"],
+                    'desc': video_data["desc"],
+                    'collect_count': video_data["collect_count"],
+                    'comment_count': video_data["comment_count"],
+                    'digg_count': video_data["digg_count"],
+                    'play_count': video_data["play_count"],
+                    'share_count': video_data["share_count"]
+                }
+            )
+            return video_obj, created
+        
+        # 将函数存储为全局变量，避免重复定义
+        globals()['save_video_data_to_db'] = save_video_data_to_db
+        globals()['VideoData'] = VideoData
+
     # 实现具体的数据处理逻辑
     all_data = []
     if "itemList" in data:
@@ -124,7 +132,7 @@ async def process_video_data(data, tiktok_account):
             all_data.append(my)
             
             # 异步保存到数据库，根据video_id去重
-            video_obj, created = await save_video_data_to_db(my)
+            video_obj, created = await globals()['save_video_data_to_db'](my)
             
             if created:
                 print(f"New video saved: {my['video_id']}")
