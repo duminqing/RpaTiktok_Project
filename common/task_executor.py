@@ -4,9 +4,11 @@ from common.models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWor
 from browser_bit.bit_manager import browser_task_manager
 from browser_bit.bit_post import post
 from browser_bit.bit_scrolling import scrolling
+from browser_bit.bit_video_data import get_video_data
 from android_myt.android_manager import android_task_manager
 from android_myt.android_post import perform_tiktok_post
 from android_myt.android_scrolling import perform_tiktok_scrolling
+from android_myt.android_video_data import get_video_data
 
 def execute_tiktok_scrolling_tasks():
     accounts = TikTokAccountInfo.objects.filter(account_status=0)
@@ -123,3 +125,32 @@ def execute_tiktok_publishing_tasks():
         video.update_date = timezone.now()
         video_copy.save()
         print(f"已更新视频和文案状态，视频ID: {video.id}, 文案ID: {video_copy.id}")
+
+def execute_tiktok_video_data():
+    accounts = TikTokAccountInfo.objects.filter(account_status=0)
+    for account in accounts:
+        device = Device.objects.filter(device_id=account.device_id).first()
+        if not device:
+            print(f"未找到设备ID为 {account.device_id} 的设备信息，跳过账号 {account.tiktok_account}")
+            continue
+        if account.device_id.startswith("BIT"):
+            # 使用browser_bit的post方法
+            kwargs = {
+                'device_id': account.device_id,
+                'device_code': device.device_code,
+                'tiktok_account': account.tiktok_account
+            }
+            # 提交任务到任务管理器
+            task_id = browser_task_manager.submit_task(get_video_data, **kwargs)
+            print(f"已提交浏览器任务，账号: {account.tiktok_account}, 任务ID: {task_id}")
+        else:
+            # 使用android_myt的perform_tiktok_post方法
+            kwargs = {
+                'device_id': account.device_id,
+                'device_code': device.device_code,
+                'tiktok_account': account.tiktok_account
+            }
+
+            # 提交任务到Android任务管理器
+            task_id = android_task_manager.submit_task(get_video_data, **kwargs)
+            print(f"已提交安卓任务，账号: {account.tiktok_account}, 任务ID: {task_id}")

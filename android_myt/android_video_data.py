@@ -1,7 +1,7 @@
 import logging
 
+from browser_bit import bit_video_data
 from browser_bit.bit_manager import browser_task_manager
-from browser_bit.bit_video_data import video_data
 from .android_common import open_tiktok, press_home, random_sleep
 from .android_connect_device import connect_device
 
@@ -46,6 +46,5 @@ def get_video_data(**kwargs):
     """
     提交视频数据获取任务, 通过代理浏览器获取比较方便
     """
-    kwargs['pad_code'] = '';
-    task_id = browser_task_manager.submit_task(video_data, **kwargs)
+    task_id = browser_task_manager.submit_task(bit_video_data.get_video_data, **kwargs)
     return task_id

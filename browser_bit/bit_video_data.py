@@ -4,7 +4,7 @@ from .bit_api import *
 from playwright.async_api import async_playwright
 
 
-async def video_data(**kwargs):
+async def get_video_data(**kwargs):
     browser_id = kwargs.get("device_code")
     tiktok_account = kwargs.get("tiktok_account")
 

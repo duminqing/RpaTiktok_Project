@@ -5,7 +5,7 @@ import json
 from .bit_manager import browser_task_manager
 from .bit_post import post
 from .bit_scrolling import scrolling
-from .bit_video_data import video_data
+from .bit_video_data import get_video_data
 
 
 @csrf_exempt
@@ -98,7 +98,7 @@ def get_video_data(request):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         # 提交任务到内存队列
-        task_id = browser_task_manager.submit_task(video_data, **kwargs)
+        task_id = browser_task_manager.submit_task(get_video_data, **kwargs)
 
         # 立即返回任务ID，不等待任务完成
         return JsonResponse(
