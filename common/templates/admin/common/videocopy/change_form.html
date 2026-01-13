@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    <div class="submit-row">
+        <a href="{% url 'admin:common_videocopy_bulk_add' %}" class="default btn btn-info" style="float: left; margin-right: 10px;">
+            Batch Video Copy
+        </a>
+    </div>
+{% endblock %}

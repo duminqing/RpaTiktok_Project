@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+{% load static admin_urls %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>{{ title }}</h1>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ form.copy_file.id_for_label }}">选择TXT文件</label>
+                            {{ form.copy_file }}
+                            {% if form.copy_file.errors %}
+                                <div class="text-danger">{{ form.copy_file.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.copy_tag.id_for_label }}">文案标签</label>
+                            {{ form.copy_tag }}
+                            {% if form.copy_tag.errors %}
+                                <div class="text-danger">{{ form.copy_tag.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="submit-row">
+                            <input type="submit" value="Batch" class="default btn btn-success" name="_save">
+                            <input type="submit" value="Batch and Continue Editing" class="btn btn-info" name="_continue">
+                            <input type="submit" value="Batch and Add Another" class="btn btn-secondary" name="_addanother">
+                            <a href="../" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,27 @@
 from django.contrib import admin
+from django.shortcuts import render, redirect
+from django.urls import path
+from django.contrib import messages
 from .models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord, VideoData
+from django import forms
+import os
+
+# 定义常量以避免模型加载问题
+TAG_CHOICES = [
+    (0, '未分类'),
+    (1, '女士'),
+    (2, '宠物'),
+    (3, '婴儿'),
+]
+STATUS_CHOICES = [
+    (0, '正常'),
+    (1, '封号'),
+    (2, '养号'),
+]
+STATUS2_CHOICES = [
+    (0, '未使用'),
+    (1, '已使用'),
+]
 
 
 @admin.register(TikTokAccountInfo)
@@ -89,6 +111,73 @@ class VideoCopyAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('bulk-add/', self.admin_site.admin_view(self.bulk_add_view), name='common_videocopy_bulk_add'),
+        ]
+        return custom_urls + urls
+
+    def bulk_add_view(self, request):
+        # 在函数内部定义表单，使用模块级常量
+        class BulkVideoCopyForm(forms.Form):
+            copy_file = forms.FileField(label='选择TXT文件')
+            copy_tag = forms.ChoiceField(
+                choices=[('', '---------')] + [(i, label) for i, label in TAG_CHOICES],
+                required=False,
+                label='文案标签'
+            )
+        
+        if request.method == 'POST':
+            form = BulkVideoCopyForm(request.POST, request.FILES)
+            if form.is_valid():
+                copy_file = request.FILES['copy_file']
+                copy_tag = form.cleaned_data['copy_tag']
+                
+                # 检查文件扩展名
+                if not copy_file.name.endswith('.txt'):
+                    messages.error(request, '请选择一个TXT文件')
+                    return render(request, 'admin/bulk_add_videocopy.html', {'form': form, 'title': '批量添加视频文案'})
+                
+                # 读取文件内容
+                file_content = copy_file.read().decode('utf-8')
+                lines = file_content.splitlines()
+                
+                created_count = 0
+                for line in lines:
+                    line = line.strip()
+                    if line:  # 忽略空行
+                        VideoCopy.objects.create(
+                            copy_content=line,
+                            copy_tag=int(copy_tag) if copy_tag else None,
+                            status=0  # 默认设置为未使用
+                            # 注意：不需要手动设置create_date和update_date，因为模型中有auto_now_add和auto_now
+                        )
+                        created_count += 1
+                
+                messages.success(request, f'成功批量添加了 {created_count} 条文案内容')
+                
+                # 根据按钮判断跳转
+                if '_continue' in request.POST:
+                    # 继续编辑 - 保持在当前页面
+                    form = BulkVideoCopyForm()
+                    return render(request, 'admin/bulk_add_videocopy.html', {'form': form, 'title': '批量添加视频文案'})
+                elif '_addanother' in request.POST:
+                    # 再添加一个 - 返回当前页面，清空表单
+                    form = BulkVideoCopyForm()
+                    return render(request, 'admin/bulk_add_videocopy.html', {'form': form, 'title': '批量添加视频文案'})
+                else:
+                    # 批量 - 返回列表页
+                    return redirect('../')
+        else:
+            form = BulkVideoCopyForm()
+
+        context = {
+            'form': form,
+            'title': '批量添加视频文案',
+        }
+        return render(request, 'admin/bulk_add_videocopy.html', context)
 
 
 @admin.register(SearchWord)
