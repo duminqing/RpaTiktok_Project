@@ -124,7 +124,7 @@ class VideoCopyAdmin(admin.ModelAdmin):
         class BulkVideoCopyForm(forms.Form):
             copy_file = forms.FileField(label='选择TXT文件')
             copy_tag = forms.ChoiceField(
-                choices=[('', '---------')] + [(i, label) for i, label in TAG_CHOICES],
+                choices=TAG_CHOICES,
                 required=False,
                 label='文案标签'
             )
