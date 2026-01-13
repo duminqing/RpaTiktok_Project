@@ -50,94 +50,98 @@ async def post(**kwargs):
         browser = await chromium.connect_over_cdp(ws)
         default_context = browser.contexts[0]
         print(f'Browser {browser_id} - new page and goto tiktok creator_center')
-        page = await default_context.new_page()
-        await page.goto('https://www.tiktok.com/tiktokstudio/upload?from=creator_center', timeout=60000)
-        print("打开页面")
-        await page.wait_for_timeout(5000)
-        element = await page.query_selector(".local-draft-content")
-        if element:
-            print("存在草稿")
-            # 查找class=local-draft-button-group的元素
-            button_group = await page.query_selector(".local-draft-button-group")
-            if button_group:
-                # 获取按钮组下的所有div按钮
-                buttons = await button_group.query_selector_all("button")
+        try:
+            page = await default_context.new_page()
+            await page.goto('https://www.tiktok.com/tiktokstudio/upload?from=creator_center', timeout=60000)
+            print("打开页面")
+            await page.wait_for_timeout(5000)
+            element = await page.query_selector(".local-draft-content")
+            if element:
+                print("存在草稿")
+                # 查找class=local-draft-button-group的元素
+                button_group = await page.query_selector(".local-draft-button-group")
+                if button_group:
+                    # 获取按钮组下的所有div按钮
+                    buttons = await button_group.query_selector_all("button")
 
-                # 检查是否恰好有2个按钮
-                if len(buttons) == 2:
-                    # 点击第一个按钮
-                    first_button = buttons[0]
-                    await first_button.click()
-                    print("丢弃草稿")
-                    try:
-                        await page.wait_for_selector(
-                            "div.TUXModal.common-modal", timeout=5000
-                        )
+                    # 检查是否恰好有2个按钮
+                    if len(buttons) == 2:
+                        # 点击第一个按钮
+                        first_button = buttons[0]
+                        await first_button.click()
+                        print("丢弃草稿")
+
+                        await page.wait_for_selector("div.TUXModal.common-modal", timeout=5000)
                         print("丢弃草稿对话框已出现")
                         # 点击Discard按钮
                         discard_button = await page.query_selector(".TUXButton--primary")
                         await discard_button.click()
                         print("已点击Discard按钮")
                         await page.wait_for_timeout(5000)
-                    except:
-                        print("对话框未出现或处理超时")
 
-        await page.set_input_files('input[type="file"]', video_path, timeout=60000)
-        print("上传文件")
-        await page.wait_for_timeout(5000)  # 添加等待时间，确保文件上传开始
-        await page.wait_for_selector('[contenteditable="true"]', timeout=10000)
-        print("出现编辑框")
-        await page.wait_for_selector('button[aria-label="Replace"]', timeout=60000)
-        print("上传完成")
-        caption_editor = await page.query_selector('[contenteditable="true"]')
-        print("编辑框已找到")
-        if caption_editor:
-            await caption_editor.click()
-            await caption_editor.fill(copy_content)
-        print("开始滚动到底部")
-        try:
+            await page.set_input_files('input[type="file"]', video_path, timeout=60000)
+            print("上传文件")
+            await page.wait_for_selector('[contenteditable="true"]', timeout=60000)
+            print("出现编辑框")
+            await page.wait_for_selector('button[aria-label="Replace"]', timeout=60000)
+            print("上传完成")
+            caption_editor = await page.query_selector('[contenteditable="true"]')
+            print("编辑框已找到")
+            if caption_editor:
+                await caption_editor.click()
+                await caption_editor.fill(copy_content)
+            print("开始滚动到底部")
+
             post_button = await page.query_selector('button[data-e2e="post_video_button"]')
             if post_button:
                 await post_button.scroll_into_view_if_needed()
                 print("已滚动到发布按钮")
             else:
                 await page.evaluate("document.querySelector('body').scrollIntoView(false)")
-        except Exception as e:
-            print(f"滚动失败: {e}")
 
-        # 检查状态
-        print("检查开关状态")
-        switches = await page.query_selector_all('input.Switch__input[type="checkbox"]')
-        for switch in switches[-2:]:
-            class_attr = await switch.get_attribute("class")
-            is_checked = "Switch__input--checked-true" in class_attr
-            if not is_checked:
-                print("Switch未开启，正在尝试开启")
-                # 点击切换状态
-                # 替换原来的 await switch.click()
-                await switch.evaluate_handle("element => element.click()")
-                # 等待1秒让状态更新（也可改用等待元素属性变化，更精准）
-                await page.wait_for_timeout(500)
-
-                # 验证状态是否切换成功
-                new_class_attr = await switch.get_attribute("class")
-                new_is_checked = "Switch__input--checked-true" in new_class_attr
-                if new_is_checked:
-                    print("Switch已成功开启")
-                else:
-                    print("警告：Switch开启失败，可能需要重新点击")
-                    # 重试点击（可选）
+            # 检查状态
+            print("检查开关状态")
+            switches = await page.query_selector_all('input.Switch__input[type="checkbox"]')
+            for switch in switches[-2:]:
+                class_attr = await switch.get_attribute("class")
+                is_checked = "Switch__input--checked-true" in class_attr
+                if not is_checked:
+                    print("Switch未开启，正在尝试开启")
+                    # 点击切换状态
+                    # 替换原来的 await switch.click()
                     await switch.evaluate_handle("element => element.click()")
+                    # 等待1秒让状态更新（也可改用等待元素属性变化，更精准）
                     await page.wait_for_timeout(500)
 
-        if await check_upload_status(page):
-            if post_button:
-                # 确保按钮可见并点击
-                await post_button.click()
-                print("Post button clicked")
+                    # 验证状态是否切换成功
+                    new_class_attr = await switch.get_attribute("class")
+                    new_is_checked = "Switch__input--checked-true" in new_class_attr
+                    if new_is_checked:
+                        print("Switch已成功开启")
+                    else:
+                        print("警告：Switch开启失败，可能需要重新点击")
+                        # 重试点击（可选）
+                        await switch.evaluate_handle("element => element.click()")
+                        await page.wait_for_timeout(500)
 
-        print(
-            f"等待发布完成{browser_id},视频路径【{video_path}】,视频文案【{copy_content}】"
-        )
-        time.sleep(2)
-        closeBrowser(browser_id)
+            if await check_upload_status(page):
+                if post_button:
+                    # 确保按钮可见并点击
+                    await post_button.click()
+                    print("Post button clicked")
+                    print(
+                        f"等待发布完成{browser_id},视频路径【{video_path}】,视频文案【{copy_content}】"
+                    )
+            else:
+                print("发布失败")
+        except Exception as e:
+            print(f"发布失败: {e}")
+        finally:
+            # 关闭浏览器上下文中所有页面
+            time.sleep(10)
+            if default_context:
+                pages = default_context.pages.copy()  # 复制页面列表，因为关闭页面会修改原列表
+                for p in pages:
+                    if not p.is_closed():
+                        await p.close()
+            closeBrowser(browser_id)

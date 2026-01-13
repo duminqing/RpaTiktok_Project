@@ -56,7 +56,7 @@ def scroll_videos(request):
         kwargs = {
             "device_id": data.get("device_id"),
             "device_code": data.get("device_code"),
-            "memo": data.get("memo"),
+            "search_word": data.get("search_word"),
             "scrolling_time": data.get("scrolling_time"),
         }
 

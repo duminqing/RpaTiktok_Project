@@ -6,7 +6,8 @@ from playwright.async_api import async_playwright
 
 async def video_data(**kwargs):
     browser_id = kwargs.get("device_code")
-    
+    tiktok_account = kwargs.get("tiktok_account")
+
     async with async_playwright() as playwright:
         res = openBrowser(browser_id)
         ws = res["data"]["ws"]
@@ -16,10 +17,8 @@ async def video_data(**kwargs):
         browser = await chromium.connect_over_cdp(ws)
         default_context = browser.contexts[0]
         page = await default_context.new_page()
-        tiktok_account = kwargs.get("tiktok_account")
         # 监听API请求
         page.on("response", lambda response: handle_api_response(response, tiktok_account))
-
         try:
             # 打开目标TikTok页面
             await page.goto(f"https://www.{tiktok_account}", timeout=60000)
@@ -28,15 +27,18 @@ async def video_data(**kwargs):
             await page.wait_for_load_state("networkidle")
             # 这里可以添加滚动逻辑来触发更多视频加载
             await scroll_and_collect_videos(page)
+            # 保持浏览器开启一段时间以便捕获API响应
+            await page.wait_for_timeout(30000)  # 可根据需要调整时间
         except Exception as e:
             print(f"Error during navigation: {e}")
-        # 保持浏览器开启一段时间以便捕获API响应
-        await asyncio.sleep(30)  # 可根据需要调整时间
-        print(f"Browser {browser_id} - end")
-        print(f"Browser {browser_id} - close page and browser")
-
-        time.sleep(2)
-        closeBrowser(browser_id)
+        finally:
+            time.sleep(10)
+            if default_context:
+                pages = default_context.pages.copy()  # 复制页面列表，因为关闭页面会修改原列表
+                for p in pages:
+                    if not p.is_closed():
+                        await p.close()
+            closeBrowser(browser_id)
 
 
 async def scroll_and_collect_videos(page):
@@ -72,8 +74,9 @@ async def handle_api_response(response, tiktok_account):
 def process_video_data(data, tiktok_account):
     """处理获取到的视频数据"""
     # 实现具体的数据处理逻辑
+    all_data = []
     if "itemList" in data:
-        all_data = []
+
         videos = data["itemList"]
         print(f"Found {len(videos)} videos")
         for video in videos:
@@ -87,12 +90,12 @@ def process_video_data(data, tiktok_account):
             play_count = stats.get("playCount", 0)
             share_count = stats.get("shareCount", 0)
             # 打印详细信息
-            my["tiktokAccount"] = tiktok_account
-            my["postId"] = video_id
-            my["collects"] = collect_count
-            my["comments"] = comment_count
-            my["diggs"] = digg_count
-            my["plays"] = play_count
-            my["shares"] = share_count
+            my["tiktok_account"] = tiktok_account
+            my["video_id"] = video_id
+            my["collect_count"] = collect_count
+            my["comment_count"] = comment_count
+            my["digg_count"] = digg_count
+            my["play_count"] = play_count
+            my["share_count"] = share_count
             all_data.append(my)
         # 保存数据
