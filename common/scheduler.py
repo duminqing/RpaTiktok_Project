@@ -10,14 +10,11 @@ def execute_video_publishing_job():
     # 延迟导入，避免AppRegistryNotReady错误
     from common.task_executor import execute_tiktok_publishing_tasks
     print("开始执行定时视频发布任务...")
-    logger.info("开始执行定时视频发布任务...")
     try:
         execute_tiktok_publishing_tasks()
         print("定时视频发布任务执行完成")
-        logger.info("定时视频发布任务执行完成")
     except Exception as e:
         print(f"定时视频发布任务执行失败: {str(e)}")
-        logger.error(f"定时视频发布任务执行失败: {str(e)}")
 
 
 def start_scheduler():
@@ -44,10 +41,8 @@ def start_scheduler():
                 misfire_grace_time=3600  # 设置错过执行的宽限时间为1小时
             )
             print("定时任务已添加: 每天凌晨3点执行视频发布")
-            logger.info("定时任务已添加: 每天凌晨3点执行视频发布")
         else:
             print("定时任务已存在，无需重复添加")
-            logger.info("定时任务已存在，无需重复添加")
 
 
 def stop_scheduler():
@@ -56,4 +51,3 @@ def stop_scheduler():
     
     if scheduler and scheduler.running:
         scheduler.shutdown()
-        logger.info("定时任务调度器已关闭")
