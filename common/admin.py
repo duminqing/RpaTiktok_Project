@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord, VideoData
 from django import forms
 import os
+import glob
 
 # 定义常量以避免模型加载问题
 TAG_CHOICES = [
@@ -72,7 +73,25 @@ class DeviceAdmin(admin.ModelAdmin):
         }),
     )
 
+class BulkVideoCopyForm(forms.Form):
+    copy_file = forms.FileField(label='选择TXT文件')
+    copy_tag = forms.ChoiceField(
+        choices=[('', '---------')] + [(i, label) for i, label in TAG_CHOICES],
+        required=False,
+        label='文案标签'
+    )
 
+class BulkVideoForm(forms.Form):
+    video_directory = forms.CharField(
+        widget=forms.TextInput(attrs={'size': 80}),
+        label='视频目录路径',
+        help_text='请输入包含视频文件的目录路径，例如: E:/videos 或 /home/user/videos'
+    )
+    video_tag = forms.ChoiceField(
+        choices=[('', '---------')] + [(i, label) for i, label in TAG_CHOICES],
+        required=False,
+        label='视频标签'
+    )
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
     list_display = [
@@ -86,11 +105,62 @@ class VideoAdmin(admin.ModelAdmin):
         ('视频信息', {
             'fields': ('video_path', 'video_tag', 'status')
         }),
-        ('时间信息', {
-            'fields': ('create_date', 'update_date'),
-            'classes': ('collapse',)
-        }),
     )
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('bulk-add/', self.admin_site.admin_view(self.bulk_add_view), name='common_video_bulk_add'),
+        ]
+        return custom_urls + urls
+
+    def bulk_add_view(self, request):
+        if request.method == 'POST':
+            form = BulkVideoForm(request.POST)
+            if form.is_valid():
+                video_directory = form.cleaned_data['video_directory']
+                video_tag = form.cleaned_data['video_tag']
+                
+                # 验证目录是否存在
+                if not os.path.isdir(video_directory):
+                    messages.error(request, '指定的目录不存在')
+                    return render(request, 'admin/bulk_add_video.html', {'form': form, 'title': '批量添加视频信息'})
+                
+                # 获取目录下所有视频文件（仅当前目录，不递归子目录）
+                video_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.m4v'}
+                created_count = 0
+                
+                # 列出目录中的所有文件
+                for filename in os.listdir(video_directory):
+                    filepath = os.path.join(video_directory, filename)
+                    
+                    # 检查是否为文件且扩展名在允许的视频格式中
+                    if os.path.isfile(filepath):
+                        _, ext = os.path.splitext(filename)
+                        if ext.lower() in video_extensions:
+                            # 检查是否已存在相同的视频路径
+                            if not Video.objects.filter(video_path=filepath).exists():
+                                Video.objects.create(
+                                    video_path=filepath,
+                                    video_tag=int(video_tag) if video_tag else None,
+                                    status=0  # 默认设置为未使用
+                                )
+                                created_count += 1
+                
+                if created_count > 0:
+                    messages.success(request, f'成功批量添加了 {created_count} 个视频文件')
+                else:
+                    messages.warning(request, '没有找到新的视频文件需要添加')
+                
+                # 返回列表页
+                return redirect('../')
+        else:
+            form = BulkVideoForm()
+
+        context = {
+            'form': form,
+            'title': '批量添加视频信息',
+        }
+        return render(request, 'admin/bulk_add_video.html', context)
 
 
 @admin.register(VideoCopy)
