@@ -160,7 +160,7 @@ class VideoData(models.Model):
         db_table = 'rpa_video_data'
         verbose_name = '视频数据'
         verbose_name_plural = '视频数据'
-        ordering = ['id']
+        ordering = ['-create_date']
 
     def __str__(self):
         return f"VideoData(id={self.id}, tiktok_account='{self.tiktok_account}', video_id='{self.video_id}')"

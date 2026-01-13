@@ -126,7 +126,7 @@ def execute_tiktok_publishing_tasks():
         video_copy.save()
         print(f"已更新视频和文案状态，视频ID: {video.id}, 文案ID: {video_copy.id}")
 
-def execute_tiktok_video_data():
+def execute_tiktok_video_data_tasks():
     accounts = TikTokAccountInfo.objects.filter(account_status=0)
     for account in accounts:
         device = Device.objects.filter(device_id=account.device_id).first()
