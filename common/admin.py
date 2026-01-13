@@ -106,10 +106,6 @@ class VideoCopyAdmin(admin.ModelAdmin):
         ('文案信息', {
             'fields': ('copy_content', 'copy_tag', 'status')
         }),
-        ('时间信息', {
-            'fields': ('create_date', 'update_date'),
-            'classes': ('collapse',)
-        }),
     )
     
     def get_urls(self):
