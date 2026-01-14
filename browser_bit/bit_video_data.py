@@ -136,5 +136,3 @@ async def process_video_data(data, tiktok_account):
             
             if created:
                 print(f"New video saved: {my['video_id']}")
-            else:
-                print(f"Existing video updated: {my['video_id']}")

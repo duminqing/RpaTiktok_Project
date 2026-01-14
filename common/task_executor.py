@@ -134,7 +134,6 @@ def execute_tiktok_video_data_tasks():
             print(f"未找到设备ID为 {account.device_id} 的设备信息，跳过账号 {account.tiktok_account}")
             continue
         if account.device_id.startswith("BIT"):
-            pass
             # 使用browser_bit的post方法
             kwargs = {
                 'device_id': account.device_id,
