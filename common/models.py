@@ -1,8 +1,22 @@
 # models/tiktok_account_model.py
 from django.db import models
 from django.utils import timezone
-from common.admin import STATUS_CHOICES, TAG_CHOICES, STATUS2_CHOICES
-
+# 定义常量以避免模型加载问题
+TAG_CHOICES = [
+    (0, '未分类'),
+    (1, '女士'),
+    (2, '宠物'),
+    (3, '婴儿'),
+]
+STATUS_CHOICES = [
+    (0, '正常'),
+    (1, '封号'),
+    (2, '养号'),
+]
+STATUS2_CHOICES = [
+    (0, '未使用'),
+    (1, '已使用'),
+]
 class TikTokAccountInfo(models.Model):
     """
     TikTok 账号信息模型

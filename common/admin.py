@@ -2,27 +2,12 @@ from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import path
 from django.contrib import messages
-from .models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord, VideoData
+from .models import TikTokAccountInfo, Device, Video, VideoCopy, SearchWord, VideoData, TAG_CHOICES
 from django import forms
 import os
 import glob
 
-# 定义常量以避免模型加载问题
-TAG_CHOICES = [
-    (0, '未分类'),
-    (1, '女士'),
-    (2, '宠物'),
-    (3, '婴儿'),
-]
-STATUS_CHOICES = [
-    (0, '正常'),
-    (1, '封号'),
-    (2, '养号'),
-]
-STATUS2_CHOICES = [
-    (0, '未使用'),
-    (1, '已使用'),
-]
+
 
 
 @admin.register(TikTokAccountInfo)
