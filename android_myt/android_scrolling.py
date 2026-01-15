@@ -17,7 +17,7 @@ def perform_tiktok_scrolling(**kwargs):
     local_port = kwargs.get('local_port')
     scrolling_time = int(kwargs.get('scrolling_time'))
     device_id=kwargs.get('device_id')
-
+    search_word = kwargs.get('search_word')
     # 连接设备
     logger.info(f"{device_id}正在连接设备{device_id}")    
     try:
@@ -31,7 +31,7 @@ def perform_tiktok_scrolling(**kwargs):
     logger.info(f"{device_id}打开TikTok")
     open_tiktok(device)
     logger.info(f"{device_id}搜索pads")
-    search(device,device_id)
+    search(device,device_id,search_word)
     while time.time()<end_time:
         try:
             logger.info(f"{device_id}刷第{total+1}次")
@@ -62,7 +62,28 @@ def perform_tiktok_scrolling(**kwargs):
     press_home(device)
     return {"status": "success", "message": "Scrolling completed"}
 
-def search(device,device_id):
+
+def get_random_search_word(search_word_string):
+
+    if not search_word_string:
+        return "pad"
+
+    # 按逗号分割字符串
+    search_words = search_word_string.split(',')
+
+    # 去除空白项并过滤空字符串
+    search_words = [word.strip() for word in search_words if word.strip()]
+
+    # 如果分割后没有有效项，返回空字符串
+    if not search_words:
+        return "pad"
+
+    # 随机选择一个搜索词
+    random_search_word = random.choice(search_words)
+    return random_search_word
+
+
+def search(device,device_id,search_word):
     try:
         list = device.xpath('//android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.ImageView').all()
         if len(list) > 1:
@@ -72,7 +93,7 @@ def search(device,device_id):
             logger.warning(f"{device_id}元素列表长度不足2个，当前长度: {len(list)}")
         #//android.widget.EditText
         # 方式2：简化写法（直接链式调用，若控件不存在会抛出异常，可按需使用）
-        device.xpath('//android.widget.EditText').set_text("pads")
+        device.xpath('//android.widget.EditText').set_text(get_random_search_word(search_word))
         random_sleep()
         # search按钮[836,84][1080,216]  //*[@text="Search"]
         device.press("enter")

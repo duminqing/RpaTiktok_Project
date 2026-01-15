@@ -51,6 +51,7 @@ def execute_tiktok_scrolling_tasks():
                 'local_ip': device.local_ip,
                 'local_port': device.local_port,
                 'scrolling_time': 60,  # 固定刷视频时间为60分钟
+                'search_word': search_word_str,
             }
             
             # 提交任务到Android任务管理器
