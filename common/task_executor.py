@@ -34,6 +34,7 @@ def execute_tiktok_scrolling_tasks():
         if account.device_id.startswith("BIT"):
             # 使用browser_bit的scrolling方法
             kwargs = {
+                'device_id': account.device_id,
                 'device_code': device.device_code,  # 使用设备编码连接浏览器
                 'search_word': search_word_str,
                 'scrolling_time': 60,  # 固定刷视频时间为60分钟
